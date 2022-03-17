@@ -22,6 +22,8 @@ build/
 .vercel
 .screenshots/
 .qualified-attach
+.eslintrc.js
+.gitiignore
 
 npm-debug.log*
 yarn-debug.log*
