@@ -6,8 +6,6 @@ const orders = require(path.resolve('src/data/orders-data'));
 // Use this function to assign ID's when necessary
 const nextId = require('../utils/nextId');
 
-// TODO: Implement the /orders handlers needed to make the tests pass
-
 // create a new order
 function create(req, res) {
   const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
@@ -24,7 +22,7 @@ function create(req, res) {
 }
 
 // read order
-function read(req, res, next) {
+function read(req, res) {
   res.json({ data: res.locals.order });
 }
 
@@ -45,7 +43,7 @@ function destroy(req, res, next) {
 }
 
 // list all orders
-function list(req, res, next) {
+function list(req, res) {
   res.json({ data: orders });
 }
 
@@ -64,7 +62,7 @@ function orderExists(req, res, next) {
 }
 
 // update order
-function update(req, res, next) {
+function update(req, res) {
   const { id } = res.locals.order;
   const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
   const updatedOrder = {
@@ -79,7 +77,7 @@ function update(req, res, next) {
 
 // order validation
 function validateOrder(req, res, next) {
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
+  const { data: { deliverTo, mobileNumber, dishes } = {} } = req.body;
   // deliverTo property is missing || deliverTo property is empty ""
   if (!deliverTo || deliverTo === '') {
     next({
@@ -108,7 +106,15 @@ function validateOrder(req, res, next) {
       message: 'Order must include at least one dish',
     });
   }
-  // a dish quantity property is missing || a dish quantity property is zero or less || a dish quantity property is not an integer
+
+  next();
+}
+
+// A dish Quantity Validation
+// a dish quantity property is missing || a dish quantity property is zero or less || a dish quantity property is not an integer
+function validateDishQty(req, res, next) {
+  const { data: { dishes } = {} } = req.body;
+
   dishes.map((dish, index) => {
     if (
       !dish.quantity ||
@@ -160,9 +166,9 @@ function validateStatus(req, res, next) {
 }
 
 module.exports = {
-  create: [validateOrder, create],
+  create: [validateOrder, validateDishQty, create],
   list,
   read: [orderExists, read],
-  update: [validateOrder, orderExists, validateStatus, update],
+  update: [validateOrder, validateDishQty, orderExists, validateStatus, update],
   delete: [orderExists, destroy],
 };
